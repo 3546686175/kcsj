@@ -38,12 +38,17 @@ public class MainUI {
     // 注册功能
     private void register() {
         System.out.println("\n===== 注册 =====");
+        System.out.print("请输入真实姓名: ");
+        String name = scanner.nextLine();
         System.out.print("请输入用户名: ");
         String username = scanner.nextLine();
         System.out.print("请输入密码(6-12位): ");
         String password = scanner.nextLine();
         System.out.print("请确认密码: ");
         String confirmPassword = scanner.nextLine();
+        System.out.print("请输入联系方式: ");
+        String contact = scanner.nextLine();
+        
         if (!password.equals(confirmPassword)) {
             System.out.println("两次密码输入不一致，请重新注册！");
             return;
@@ -51,7 +56,7 @@ public class MainUI {
 
         // 调用数据服务层注册用户
         DataService dataService = new DataService();
-        User newUser = new User(0, username, password, "user");
+        User newUser = new User(0, username, password, "user", name, contact);
         dataService.register(newUser);
 
         System.out.println("注册成功！");
@@ -127,7 +132,8 @@ public class MainUI {
             System.out.println("\n===== 商品管理 =====");
             System.out.println("1. 发布商品");
             System.out.println("2. 展示商品列表");
-            System.out.println("3. 返回主菜单");
+            System.out.println("3. 搜索商品");
+            System.out.println("4. 返回主菜单");
             System.out.print("请选择功能: ");
             int choice = scanner.nextInt();
             scanner.nextLine();
@@ -140,6 +146,9 @@ public class MainUI {
                     showGoodsList();
                     break;
                 case 3:
+                    searchGoods();
+                    break;
+                case 4:
                     return;
                 default:
                     System.out.println("无效选择，请重新输入！");
@@ -256,29 +265,137 @@ public class MainUI {
 
     //展示管理员页面
     public void showAdminMenu() {
-        System.out.println("\n===== 管理员菜单 =====");
-        System.out.println("1. 展示所有用户");
-        System.out.println("2. 展示所有商品");
-        System.out.println("3. 展示所有订单");
-        System.out.println("4. 返回主菜单");
-        System.out.print("请选择功能: ");
-        int choice = scanner.nextInt();
-        scanner.nextLine();
+        while (true) {
+            System.out.println("\n===== 管理员菜单 =====");
+            System.out.println("1. 展示所有用户");
+            System.out.println("2. 展示所有商品");
+            System.out.println("3. 展示所有订单");
+            System.out.println("4. 商品管理");
+            System.out.println("5. 返回主菜单");
+            System.out.print("请选择功能: ");
+            int choice = scanner.nextInt();
+            scanner.nextLine();
 
-        switch (choice) {
-            case 1:
-                showAllUsers();
-                break;
-            case 2:
-                showAllGoods();
-                break;
-            case 3:
-                showAllOrders();
-                break;
-            case 4:
-                return;
-            default:
-                System.out.println("无效选择，请重新输入！");
+            switch (choice) {
+                case 1:
+                    showAllUsers();
+                    break;
+                case 2:
+                    showAllGoods();
+                    break;
+                case 3:
+                    showAllOrders();
+                    break;
+                case 4:
+                    manageGoods();
+                    break;
+                case 5:
+                    return;
+                default:
+                    System.out.println("无效选择，请重新输入！");
+            }
+        }
+    }
+
+    // 商品管理功能
+    private void manageGoods() {
+        while (true) {
+            System.out.println("\n===== 商品管理 =====");
+            System.out.println("1. 删除商品");
+            System.out.println("2. 修改商品信息");
+            System.out.println("3. 返回管理员菜单");
+            System.out.print("请选择功能: ");
+            int choice = scanner.nextInt();
+            scanner.nextLine();
+
+            switch (choice) {
+                case 1:
+                    deleteGoods();
+                    break;
+                case 2:
+                    updateGoods();
+                    break;
+                case 3:
+                    return;
+                default:
+                    System.out.println("无效选择，请重新输入！");
+            }
+        }
+    }
+
+    // 删除商品
+    private void deleteGoods() {
+        System.out.println("\n===== 删除商品 =====");
+        showAllGoods();
+        
+        System.out.print("请输入要删除的商品ID: ");
+        int goodsId = scanner.nextInt();
+        scanner.nextLine();
+        
+        System.out.print("确认删除商品ID为 " + goodsId + " 的商品吗？(y/n): ");
+        String confirm = scanner.nextLine();
+        
+        if ("y".equalsIgnoreCase(confirm)) {
+            boolean success = DataService.deleteGoods(goodsId);
+            if (success) {
+                System.out.println("商品删除成功！");
+            } else {
+                System.out.println("商品删除失败，请检查商品ID是否正确！");
+            }
+        } else {
+            System.out.println("取消删除操作。");
+        }
+    }
+
+    // 修改商品信息
+    private void updateGoods() {
+        System.out.println("\n===== 修改商品信息 =====");
+        showAllGoods();
+        
+        System.out.print("请输入要修改的商品ID: ");
+        int goodsId = scanner.nextInt();
+        scanner.nextLine();
+        
+        Goods goods = DataService.getGoodsById(goodsId);
+        if (goods == null) {
+            System.out.println("商品不存在！");
+            return;
+        }
+        
+        System.out.println("当前商品信息：");
+        System.out.printf("名称: %s | 价格: %.2f | 状态: %s | 描述: %s\n",
+                goods.getName(), goods.getPrice(), goods.getStatus(), goods.getDescription());
+        
+        System.out.print("请输入新商品名称（直接回车保持原值）: ");
+        String name = scanner.nextLine();
+        if (!name.isEmpty()) {
+            goods.setName(name);
+        }
+        
+        System.out.print("请输入新商品价格（输入0保持原值）: ");
+        double price = scanner.nextDouble();
+        scanner.nextLine();
+        if (price > 0) {
+            goods.setPrice(price);
+        }
+        
+        System.out.print("请输入新商品描述（直接回车保持原值）: ");
+        String description = scanner.nextLine();
+        if (!description.isEmpty()) {
+            goods.setDescription(description);
+        }
+        
+        System.out.print("请输入新商品状态（在售/已售出，直接回车保持原值）: ");
+        String status = scanner.nextLine();
+        if (!status.isEmpty()) {
+            goods.setStatus(status);
+        }
+        
+        boolean success = DataService.updateGoods(goods);
+        if (success) {
+            System.out.println("商品信息修改成功！");
+        } else {
+            System.out.println("商品信息修改失败！");
         }
     }
 
@@ -290,8 +407,8 @@ public class MainUI {
             return;
         }
         for (User u : users) {
-            System.out.printf("ID: %d | 用户名: %s | 角色: %s\n",
-                    u.getId(), u.getUsername(), u.getRole());
+            System.out.printf("ID: %d | 姓名: %s | 用户名: %s | 联系方式: %s | 角色: %s\n",
+                    u.getId(), u.getName(), u.getUsername(), u.getContact(), u.getRole());
         }
     }
 
@@ -333,5 +450,67 @@ public class MainUI {
         }
     }
 
+    // 搜索商品
+    private void searchGoods() {
+        System.out.println("\n===== 搜索商品 =====");
+        System.out.print("请输入搜索关键词: ");
+        String keyword = scanner.nextLine();
+        
+        if (keyword == null || keyword.trim().isEmpty()) {
+            System.out.println("搜索关键词不能为空！");
+            return;
+        }
+        
+        List<Goods> searchResults = DataService.searchGoods(keyword);
+        if (searchResults.isEmpty()) {
+            System.out.println("未找到包含关键词 '" + keyword + "' 的商品！");
+            return;
+        }
+        
+        System.out.println("\n===== 搜索结果 =====");
+        System.out.println("找到 " + searchResults.size() + " 个相关商品：");
+        for (Goods g : searchResults) {
+            System.out.printf("ID: %d | 名称: %s | 价格: %.2f | 状态: %s | 描述: %s\n",
+                    g.getId(), g.getName(), g.getPrice(), g.getStatus(), g.getDescription());
+        }
+        
+        // 提供查看商品详情的选项
+        System.out.print("\n是否查看商品详情？(y/n): ");
+        String viewDetail = scanner.nextLine();
+        if ("y".equalsIgnoreCase(viewDetail)) {
+            viewGoodsDetail(searchResults);
+        }
+    }
     
+    // 查看商品详情
+    private void viewGoodsDetail(List<Goods> goodsList) {
+        System.out.print("请输入要查看详情的商品ID: ");
+        int goodsId = scanner.nextInt();
+        scanner.nextLine();
+        
+        Goods goods = DataService.getGoodsById(goodsId);
+        if (goods == null) {
+            System.out.println("商品不存在！");
+            return;
+        }
+        
+        System.out.println("\n===== 商品详情 =====");
+        System.out.printf("商品ID: %d\n", goods.getId());
+        System.out.printf("商品名称: %s\n", goods.getName());
+        System.out.printf("商品价格: %.2f\n", goods.getPrice());
+        System.out.printf("商品状态: %s\n", goods.getStatus());
+        System.out.printf("商品描述: %s\n", goods.getDescription());
+        System.out.printf("发布时间: %s\n", goods.getCreateTime());
+        
+        // 如果是已售出商品，显示购买方信息
+        if ("已售出".equals(goods.getStatus())) {
+            Order order = DataService.getOrderByGoodsId(goodsId);
+            if (order != null) {
+                User buyer = DataService.getUserById(order.getBuyerId());
+                if (buyer != null) {
+                    System.out.printf("购买方: %s (ID: %d)\n", buyer.getUsername(), buyer.getId());
+                }
+            }
+        }
+    }
 }

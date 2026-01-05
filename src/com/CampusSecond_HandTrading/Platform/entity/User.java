@@ -9,6 +9,8 @@ public class User {
     private String username;// 用户名
     private String password;// 密码
     private String role;    // 角色（普通用户/管理员）
+    private String name;    // 真实姓名
+    private String contact; // 联系方式
 
     // 无参构造
     public User() {}
@@ -19,6 +21,16 @@ public class User {
         this.username = username;
         this.password = password;
         this.role = role;
+    }
+
+    // 全参数构造
+    public User(int id, String username, String password, String role, String name, String contact) {
+        this.id = id;
+        this.username = username;
+        this.password = password;
+        this.role = role;
+        this.name = name;
+        this.contact = contact;
     }
 
     // Getter & Setter
@@ -39,6 +51,14 @@ public class User {
         return role;
     }
 
+    public String getName() {
+        return name;
+    }
+
+    public String getContact() {
+        return contact;
+    }
+
     public void setId(int id) {
         this.id = id;
     }
@@ -53,5 +73,13 @@ public class User {
 
     public void setRole(String role) {
         this.role = role;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public void setContact(String contact) {
+        this.contact = contact;
     }
 }

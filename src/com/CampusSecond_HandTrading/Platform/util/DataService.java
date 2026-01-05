@@ -158,12 +158,14 @@ public class DataService {
 
     // 注册用户
     public static void register(User newUser) {
-        String sql = "INSERT INTO users(username, password, role) VALUES (?, ?, ?)";
+        String sql = "INSERT INTO users(username, password, role, name, contact) VALUES (?, ?, ?, ?, ?)";
         try (Connection conn = DBUtil.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setString(1, newUser.getUsername());
             ps.setString(2, newUser.getPassword());
             ps.setString(3, newUser.getRole());
+            ps.setString(4, newUser.getName());
+            ps.setString(5, newUser.getContact());
             ps.executeUpdate();
         } catch (SQLException e) {
             e.printStackTrace();
@@ -183,6 +185,8 @@ public class DataService {
                 u.setUsername(rs.getString("username"));
                 u.setPassword(rs.getString("password"));
                 u.setRole(rs.getString("role"));
+                u.setName(rs.getString("name"));
+                u.setContact(rs.getString("contact"));
                 list.add(u);
             }
         } catch (SQLException e) {
@@ -260,5 +264,65 @@ public class DataService {
             e.printStackTrace();
         }
         return null;
+    }
+
+    // 删除商品
+    public static boolean deleteGoods(int goodsId) {
+        String sql = "DELETE FROM goods WHERE id = ?";
+        try (Connection conn = DBUtil.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, goodsId);
+            int affectedRows = ps.executeUpdate();
+            return affectedRows > 0;
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return false;
+    }
+
+    // 修改商品信息
+    public static boolean updateGoods(Goods goods) {
+        String sql = "UPDATE goods SET name = ?, price = ?, description = ?, status = ? WHERE id = ?";
+        try (Connection conn = DBUtil.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setString(1, goods.getName());
+            ps.setDouble(2, goods.getPrice());
+            ps.setString(3, goods.getDescription());
+            ps.setString(4, goods.getStatus());
+            ps.setInt(5, goods.getId());
+            int affectedRows = ps.executeUpdate();
+            return affectedRows > 0;
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return false;
+    }
+
+    // 根据关键词搜索商品
+    public static List<Goods> searchGoods(String keyword) {
+        String sql = "SELECT * FROM goods WHERE name LIKE ? OR description LIKE ?";
+        List<Goods> goodsList = new ArrayList<>();
+        try (Connection conn = DBUtil.getConnection()) {
+            PreparedStatement ps = conn.prepareStatement(sql);
+            String searchPattern = "%" + keyword + "%";
+            ps.setString(1, searchPattern);
+            ps.setString(2, searchPattern);
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    Goods goods = new Goods();
+                    goods.setId(rs.getInt("id"));
+                    goods.setName(rs.getString("name"));
+                    goods.setPrice(rs.getDouble("price"));
+                    goods.setDescription(rs.getString("description"));
+                    goods.setSellerId(rs.getInt("seller_id"));
+                    goods.setStatus(rs.getString("status"));
+                    goods.setCreateTime(rs.getDate("create_time"));
+                    goodsList.add(goods);
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return goodsList;
     }
 }
