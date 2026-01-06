@@ -325,4 +325,31 @@ public class DataService {
         }
         return goodsList;
     }
+
+    // 查询用户交易记录（作为买家和卖家的订单）
+    public static List<Order> getUserTransactionRecords(int userId) {
+        List<Order> list = new ArrayList<>();
+        String sql = "SELECT * FROM orders WHERE buyer_id = ? OR seller_id = ? ORDER BY create_time DESC";
+        try (Connection conn = DBUtil.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, userId);
+            ps.setInt(2, userId);
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    Order order = new Order();
+                    order.setId(rs.getInt("id"));
+                    order.setGoodsId(rs.getInt("goods_id"));
+                    order.setBuyerId(rs.getInt("buyer_id"));
+                    order.setSellerId(rs.getInt("seller_id"));
+                    order.setPrice(rs.getDouble("price"));
+                    order.setStatus(rs.getString("status"));
+                    order.setCreateTime(rs.getTimestamp("create_time"));
+                    list.add(order);
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return list;
+    }
 }

@@ -303,7 +303,8 @@ public class MainUI {
             System.out.println("\n===== 商品管理 =====");
             System.out.println("1. 删除商品");
             System.out.println("2. 修改商品信息");
-            System.out.println("3. 返回管理员菜单");
+            System.out.println("3. 查询用户交易记录");
+            System.out.println("4. 返回管理员菜单");
             System.out.print("请选择功能: ");
             int choice = scanner.nextInt();
             scanner.nextLine();
@@ -316,6 +317,9 @@ public class MainUI {
                     updateGoods();
                     break;
                 case 3:
+                    queryUserTransactionRecords();
+                    break;
+                case 4:
                     return;
                 default:
                     System.out.println("无效选择，请重新输入！");
@@ -512,5 +516,81 @@ public class MainUI {
                 }
             }
         }
+    }
+    
+    // 查询用户交易记录
+    private void queryUserTransactionRecords() {
+        System.out.println("\n===== 查询用户交易记录 =====");
+        showAllUsers();
+        
+        System.out.print("请输入要查询的用户ID: ");
+        int userId = scanner.nextInt();
+        scanner.nextLine();
+        
+        User user = DataService.getUserById(userId);
+        if (user == null) {
+            System.out.println("用户不存在！");
+            return;
+        }
+        
+        System.out.println("\n===== 用户信息 =====");
+        System.out.printf("用户ID: %d\n", user.getId());
+        System.out.printf("姓名: %s\n", user.getName());
+        System.out.printf("用户名: %s\n", user.getUsername());
+        System.out.printf("联系方式: %s\n", user.getContact());
+        System.out.printf("角色: %s\n", user.getRole());
+        
+        // 获取用户的交易记录（作为买家和卖家的订单）
+        List<Order> transactionRecords = DataService.getUserTransactionRecords(userId);
+        if (transactionRecords.isEmpty()) {
+            System.out.println("\n该用户暂无交易记录！");
+            return;
+        }
+        
+        System.out.println("\n===== 交易记录 =====");
+        System.out.println("共找到 " + transactionRecords.size() + " 条交易记录：");
+        
+        for (Order order : transactionRecords) {
+            Goods goods = DataService.getGoodsById(order.getGoodsId());
+            User buyer = DataService.getUserById(order.getBuyerId());
+            User seller = DataService.getUserById(order.getSellerId());
+            
+            String transactionType = (order.getBuyerId() == userId) ? "购买" : "出售";
+            String counterparty = (order.getBuyerId() == userId) ? 
+                (seller != null ? seller.getName() : "未知卖家") : 
+                (buyer != null ? buyer.getName() : "未知买家");
+            
+            System.out.println("\n--- 交易记录 ---");
+            System.out.printf("订单ID: %d\n", order.getId());
+            System.out.printf("交易类型: %s\n", transactionType);
+            System.out.printf("交易对方: %s\n", counterparty);
+            System.out.printf("商品名称: %s\n", goods != null ? goods.getName() : "未知商品");
+            System.out.printf("交易金额: %.2f\n", order.getPrice());
+            System.out.printf("交易状态: %s\n", order.getStatus());
+            System.out.printf("交易时间: %s\n", order.getCreateTime());
+        }
+        
+        // 统计交易信息
+        double totalBuyAmount = 0;
+        double totalSellAmount = 0;
+        int buyCount = 0;
+        int sellCount = 0;
+        
+        for (Order order : transactionRecords) {
+            if (order.getBuyerId() == userId) {
+                totalBuyAmount += order.getPrice();
+                buyCount++;
+            } else {
+                totalSellAmount += order.getPrice();
+                sellCount++;
+            }
+        }
+        
+        System.out.println("\n===== 交易统计 =====");
+        System.out.printf("购买次数: %d 次\n", buyCount);
+        System.out.printf("出售次数: %d 次\n", sellCount);
+        System.out.printf("总购买金额: %.2f\n", totalBuyAmount);
+        System.out.printf("总出售金额: %.2f\n", totalSellAmount);
+        System.out.printf("交易总额: %.2f\n", totalBuyAmount + totalSellAmount);
     }
 }
