@@ -9,6 +9,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class DataService {
+    //登录验证
     public static User login(String name, String password) {
         String sql = "SELECT * FROM users WHERE username = ? AND password = ?";
         try (Connection conn = DBUtil.getConnection()) {
@@ -53,7 +54,7 @@ public class DataService {
     //获取所有商品
     public static List<Goods> getAllGoods() {
         String sql = "SELECT * FROM goods";
-        List<Goods> goodsList = new ArrayList<>();  // 初始化一个空列表，而不是null
+        List<Goods> goodsList = new ArrayList<>();  // 初始化一个空列表，且不是null
         try (Connection conn = DBUtil.getConnection()) {
             PreparedStatement ps = conn.prepareStatement(sql);
             try (ResultSet rs = ps.executeQuery()) {
@@ -151,7 +152,7 @@ public class DataService {
                 }
             }
         } catch (SQLException e) {
-            e.printStackTrace();
+            System.err.println("获取用户订单失败: " + e.getMessage());
         }
         return list;
     }

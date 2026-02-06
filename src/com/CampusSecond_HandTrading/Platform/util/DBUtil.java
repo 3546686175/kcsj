@@ -18,6 +18,7 @@ public class DBUtil {
             if (conn != null) conn.close();
         } catch (SQLException e) {
             e.printStackTrace();
+            System.out.println("数据库链接失败: " + e.getMessage());
         }
     }
 }

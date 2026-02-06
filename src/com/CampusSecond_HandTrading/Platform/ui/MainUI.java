@@ -19,7 +19,7 @@ public class MainUI {
         System.out.println("1. 注册");
         System.out.println("2. 登录");
         int choice = scanner.nextInt();
-        scanner.nextLine(); // 清除缓冲区
+        scanner.nextLine();
         switch (choice) {
             case 1:
                 register();
@@ -42,7 +42,7 @@ public class MainUI {
         String name = scanner.nextLine();
         System.out.print("请输入用户名: ");
         String username = scanner.nextLine();
-        System.out.print("请输入密码(6-12位): ");
+        System.out.print("请输入密码: ");
         String password = scanner.nextLine();
         System.out.print("请确认密码: ");
         String confirmPassword = scanner.nextLine();
